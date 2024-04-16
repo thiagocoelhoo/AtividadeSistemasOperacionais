@@ -102,12 +102,46 @@ public class ProcessControlBlock {
     }
     
     public void setPID(int value) {
+		PID = value;
     }
     
     public void setStartAddress(int value) {
+		programStartAddress = value;
     }
     
     public void setProgramState(String value) {
+		programState = value;
     }
+
+	/*
+	 * Copiar os valores dos registradores físicos
+	 * para a PCB.
+	 */
+	public void saveContext() {
+		// TODO: Copiar valores de registradores Hi e Lo
+
+		Register[] registers = mars.mips.hardware.RegisterFile.getRegisters();
+		
+		for (int i = 0; i < 32; i++) {
+			setRegister(i, registers[i].getValue());
+		}
+
+		setRegisterPC(mars.mips.hardware.RegisterFile.getProgramCounter());
+	}
+
+	/*
+	 * Copia os valores dos registradores da PCB
+	 * para os registradores físicos
+	 */
+	public void loadContext() {
+		for (int i = 0; i < 32; i++) {
+			Register reg = this.regFile[i];
+			mars.mips.hardware.RegisterFile.updateRegister(reg.getName(), reg.getValue());
+		}
+
+		mars.mips.hardware.RegisterFile.updateRegister(programCounter.getName(), programCounter.getValue());
+		mars.mips.hardware.RegisterFile.updateRegister(hi.getName(), hi.getValue());
+		mars.mips.hardware.RegisterFile.updateRegister(lo.getName(), lo.getValue());
+	}
 }
 
