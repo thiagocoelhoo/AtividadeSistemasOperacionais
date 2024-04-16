@@ -5,17 +5,17 @@ import mars.mips.SO.ProcessManager.ProcessControlBlock;
 import mars.mips.SO.ProcessManager.ProcessTable;
 
 public class SyscallFork extends AbstractSyscall {
-    private static ProcessTable processTable = new ProcessTable();
-    
     public SyscallFork() {
-        super(20, "Fork");
+        super(60, "Fork");
     }
 
+    /*
+     * Cria um novo processo na ProcessTable
+     */
     public void simulate(ProgramStatement statement) {
         ProcessControlBlock process = new ProcessControlBlock();
-        int pc = mars.mips.hardware.RegisterFile.getNumber("a0");
-        
+        int pc = statement.getAddress();
         process.setRegisterPC(pc);
-        processTable.addProcess(process);
+        ProcessTable.addProcess(process);
     }
 }
