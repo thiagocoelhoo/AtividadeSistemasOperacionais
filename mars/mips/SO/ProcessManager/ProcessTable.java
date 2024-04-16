@@ -1,14 +1,28 @@
 package mars.mips.SO.ProcessManager;
 
-public class ProcessTable {
-    ProcessControlBlock[] ready;
-    ProcessControlBlock running;
+import java.util.ArrayList;
+import java.util.List;
 
-    public ProcessTable() {
-        
+/*
+ * Crie uma classe Tabela de Processos que instancia objetos da classe PCB para cada novo processo
+ * Essa Tabela de Processo deve manter uma lista de processo “Prontos”
+ * E um processo em “Execução”
+ */
+public class ProcessTable {
+    static private List<ProcessControlBlock> ready = new ArrayList<ProcessControlBlock>();
+    static private ProcessControlBlock running;
+    
+    /*
+     * Adiciona processo na ProcessTable e retorna o PID do processo
+     */
+    public static int addProcess(ProcessControlBlock process) {
+        ready.add(process);
+        return -1;
     }
 
-    public void addProcess(ProcessControlBlock process) {
-
+    /*
+     * Recebe o PID do processo a ser removido da ProcessTable
+     */
+    public static void removeProcess(int PID) {
     }
 }

@@ -3,6 +3,32 @@ package mars.mips.SO.ProcessManager;
 import mars.mips.hardware.Memory;
 import mars.mips.hardware.Register;
 
+/*
+ * 3.Crie uma classe PCB (Process Control Block) que serve para armazenar todas as informações de contexto de um processo:
+		
+ 		a) Informações do hardware: o conteúdo de todos os registradores
+			i. Observação: utilize as informações dos registradores contidas em: mars.mips.hardware.RegisterFile;
+		
+		b) Informações lógicas: 
+		   endereço do início do programa (a partir de um label do código assembly), 
+		   PID (número único como Identificador do processo),
+		   estado do processo (pronto, executando ou bloqueado)
+		   		i. Nesse trabalho não será usado o estado “bloqueado” mas poderá ser usado no futuro, em outra atividade
+		
+		c) Deverão existir métodos “get” e “set” para todas essas informações
+		
+		d) Incluir métodos 
+			i. Para copiar o conteúdo dos registradores físicos do hardware para a PCB (o conteúdo dos registradores é do tipo int, tentar copiar objetos register pode não funcionar)
+				1. Observação: utilize as informações dos registradores contidas em: mars.mips.hardware.RegisterFile;
+			ii. E para copiar da PCB para os registradores físicos
+
+	4. A classe PCB deve estar preparada para ser incrementada, recebendo novos atributos e métodos para acessá-los nos próximos trabalhos
+
+	5. Crie uma classe Tabela de Processos que instancia objetos da classe PCB para cada novo processo
+		a) Essa Tabela de Processo deve manter uma lista de processo “Prontos”
+		b) E um processo em “Execução”
+ */
+
 public class ProcessControlBlock {
 
     public static final int GLOBAL_POINTER_REGISTER = 28;
