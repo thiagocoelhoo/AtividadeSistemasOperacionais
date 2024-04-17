@@ -23,6 +23,17 @@ public class Scheduler {
         }
 
         ProcessTable.setRunningProcess(readyProcess);
+        System.out.printf("Set process %d as running\n", readyProcess.getPID());
         readyProcess.loadContext();
+        System.out.println("Process context loaded!");
+        
+        System.out.print("Process queue:");
+        System.out.printf("[Running %d] ", ProcessTable.getRunningProcess().getPID());
+        for (ProcessControlBlock process : ProcessTable.getReadyProcesses()) {
+            System.out.printf("[Waiting %d] ", process.getPID());
+        }
+
+        System.out.println("\n");
+
     }
 }

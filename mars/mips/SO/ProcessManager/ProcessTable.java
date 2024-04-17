@@ -31,9 +31,10 @@ public class ProcessTable {
     /*
      * Adiciona processo na ProcessTable
      */
-    public static void createProcess(int programCounter) {
+    public static ProcessControlBlock createProcess(int programCounter) {
         ProcessControlBlock process = new ProcessControlBlock(programCounter);
         readyProcesses.add(process);
+        return process;
     }
 
     /*
