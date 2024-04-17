@@ -13,9 +13,7 @@ public class SyscallFork extends AbstractSyscall {
      * Cria um novo processo na ProcessTable
      */
     public void simulate(ProgramStatement statement) {
-        ProcessControlBlock process = new ProcessControlBlock();
         int pc = statement.getAddress();
-        process.setRegisterPC(pc);
-        ProcessTable.addProcess(process);
+        ProcessTable.createProcess(pc);
     }
 }
