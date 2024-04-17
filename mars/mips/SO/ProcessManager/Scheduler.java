@@ -1,5 +1,8 @@
 package mars.mips.SO.ProcessManager;
 
+import java.util.List;
+import java.util.Queue;
+
 /*
  * Crie uma classe Escalonador onde poderão ser implementados diferentes algoritmos para escolha
  * dos processos que estão no estado de “pronto” na Tabela de Processos.
@@ -9,5 +12,17 @@ package mars.mips.SO.ProcessManager;
  */
 public class Scheduler {
     public static void executeNextProcess() {
+        // TODO: implementar algoritmo de escalonamento
+        
+        List<ProcessControlBlock> processQueue = ProcessTable.getReadyProcesses();
+        ProcessControlBlock readyProcess = processQueue.remove(0);
+        ProcessControlBlock runningProcess = ProcessTable.getRunningProcess();
+        
+        if (runningProcess != null) {
+            processQueue.add(runningProcess);
+        }
+
+        ProcessTable.setRunningProcess(readyProcess);
+        readyProcess.loadContext();
     }
 }

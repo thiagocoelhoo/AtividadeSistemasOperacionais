@@ -77,6 +77,9 @@ public class ProcessControlBlock {
     private int programStartAddress;
     private String programState;
     
+	public ProcessControlBlock(int programCounter) {
+		this.programCounter.setValue(programCounter);
+	}
     // Getters
     
     public int getRegister(int index) {
