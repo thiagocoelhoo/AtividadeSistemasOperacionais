@@ -1,6 +1,9 @@
 package mars.mips.instructions.syscalls;
 
 import mars.ProgramStatement;
+import mars.mips.SO.ProcessManager.ProcessControlBlock;
+import mars.mips.SO.ProcessManager.ProcessTable;
+import mars.mips.SO.ProcessManager.Scheduler;
 
 public class SyscallProcessChange extends AbstractSyscall{
     public SyscallProcessChange() {
@@ -8,8 +11,8 @@ public class SyscallProcessChange extends AbstractSyscall{
     }
 
     public void simulate(ProgramStatement statement) {
-        /*
-         * 
+        // TODO: Implementar syscall ProcessChange
+        /* 
          * A segunda syscall deve ser chamada de SycallProcessChange com o objetivo de trocar
          * o processo que está executando na CPU 
          * 
@@ -28,5 +31,9 @@ public class SyscallProcessChange extends AbstractSyscall{
          * escolhido a partir do seu PCB (mudando seu estado para “Executando”) e retornar à execução
          * (agora do outro processo escolhido).
          */
+        
+        ProcessControlBlock process = ProcessTable.getRunningProcess();
+        process.saveContext();
+        Scheduler.executeNextProcess();
     }
 }
