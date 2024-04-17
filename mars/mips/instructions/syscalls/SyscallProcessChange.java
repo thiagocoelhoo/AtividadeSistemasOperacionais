@@ -33,7 +33,10 @@ public class SyscallProcessChange extends AbstractSyscall{
          */
         
         ProcessControlBlock process = ProcessTable.getRunningProcess();
-        process.saveContext();
+        if (process != null) {
+            process.saveContext();
+            System.out.println("Saving process context");
+        }
         Scheduler.executeNextProcess();
     }
 }
