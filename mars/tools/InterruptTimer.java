@@ -1,24 +1,10 @@
 package mars.tools;
-
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.KeyEvent;
-
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.text.AbstractDocument;
-
 // Descrição da Implementação:  Escalonamento preemptivo
 
 // PARTE 1 – ESCALONAMENTO PREEMPTIVO
 
 // •	Crie uma uma nova ferramenta (tool) do MARS que funcionará como um timer
+
 // •	A criação de ferramenta deve seguir o tutorial disponível em http://courses.missouristate.edu/KenVollmar/mars/tutorial.htm
 // •	Há duas formas de criar ferramentas:
 // o	Implementando a interface mars.tools.MarsTool
@@ -35,7 +21,6 @@ import javax.swing.text.AbstractDocument;
 // •	Para criação de processos deve ser usada a mesma chamada de sistema (SyscallFork) e podem incluir alguma mudança se necessário.
 // •	Teste a nova funcionalidade com o seguinte código
 
-
 // MyTool implements MarsTool  approach
 
 // Extract the MARS distribution from its JAR file.  The JAR file does not have an outermost folder to contain everything, so you'll want to create one and extract it into that folder.
@@ -48,7 +33,6 @@ import javax.swing.text.AbstractDocument;
 
 // After successful compilation, MARS will automatically include the new tool in its Tools menu.
 
-
 // Extract the MARS distribution from its JAR file if you have not already done so.
 
 // Develop your class in the mars.tools package (mars/tools folder).
@@ -59,21 +43,32 @@ import javax.swing.text.AbstractDocument;
 
 // Override additional methods as desired.  Some do nothing by default. 
 
-
 // After successful compilation, MARS will automatically include the new tool in its Tools menu.
-
 
 // To run it as a stand-alone application, you either need to add a main() to create the tool object and call its go() method or write a short external application to do the same.
 
+
+import java.awt.GridLayout;
+import java.util.Observable;
+
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
+import javax.swing.text.NumberFormatter;
+
+import mars.ProgramStatement;
+import mars.mips.hardware.AccessNotice;
+import mars.mips.hardware.Memory;
 
 class IntegerFilter extends DocumentFilter {
     @Override
-    public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
-            throws BadLocationException {
+    public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
         StringBuilder sb = new StringBuilder();
         sb.append(fb.getDocument().getText(0, fb.getDocument().getLength()));
         sb.insert(offset, string);
@@ -84,8 +79,7 @@ class IntegerFilter extends DocumentFilter {
     }
 
     @Override
-    public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
-            throws BadLocationException {
+    public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
         StringBuilder sb = new StringBuilder();
         sb.append(fb.getDocument().getText(0, fb.getDocument().getLength()));
         sb.replace(offset, offset + length, text);
@@ -109,88 +103,94 @@ class IntegerFilter extends DocumentFilter {
     }
 }
 
+// TODO: Implementar funcionalidade da Tool 
+public class InterruptTimer extends AbstractMarsToolAndApplication {
+    private static String name = "Interrupt Timer";
+    private static String version = "Version 1.0";
+    private static String heading = "Interrupt Timer";
 
-public class InterruptTimer extends AbstractMarsToolAndApplication{
+    private int counter;
     private int amountOfInstructions;
+
     private JPanel panel;
     private JTextField textField;
-    private JButton startButton;
-    private JButton resetButton;
-    private JButton helpButton;
     private JLabel label;
+
+    public InterruptTimer() {
+        super(name, heading);
+        this.amountOfInstructions = 0;
+        this.counter = 0;
+    }
+
+    public InterruptTimer(int amountOfInstructions) {
+        super(name, heading);
+        this.amountOfInstructions = amountOfInstructions;
+        this.counter = 0;
+    }
 
     @Override
     public String getName() {
-        return "Interrupt Timer";
+        return name;
     }
 
     @Override
-    public void action() {
-        JDialog dialog = new JDialog((JFrame) null, getName(), true); 
-        dialog.getContentPane().add(buildMainDisplayArea()); 
-        dialog.pack();
-        dialog.setVisible(true);
-}
-
-    public InterruptTimer(){
-        super("Interrupt Timer", "Interrupt Timer");
-        this.amountOfInstructions = 0;
+    protected void addAsObserver() {
+        addAsObserver(Memory.textBaseAddress, Memory.textLimitAddress);
     }
 
-    public InterruptTimer(int amountOfInstructions){
-        super("Interrupt Timer", "Interrupt Timer");
-        this.amountOfInstructions = amountOfInstructions;
+    @Override
+    protected void processMIPSUpdate(Observable resource, AccessNotice notice) {
+        if (!notice.accessIsFromMIPS()) {
+            return;
+        }
+
+        if (notice.getAccessType() != AccessNotice.READ) {
+            return;
+        }
+
+        counter++;
+
+        updateDisplay();
+    }
+
+    @Override
+    protected void initializePreGUI() {
+        // counter = counterR = counterI = counterJ = 0;
+        // lastAddress = -1;
+    }
+
+    @Override
+    protected void reset() {
+        counter = 0;
+        updateDisplay();
     }
 
     protected JComponent buildMainDisplayArea() {
-        Box box = Box.createVerticalBox();
-        box.add(buildDisplayArea());
-        return box;
-     }
-
-    private JPanel buildDisplayArea() {
         panel = new JPanel();
         panel.setLayout(new GridLayout(3, 1));
-        
-        label = new JLabel("Amount of Instructions: " + amountOfInstructions);
-        textField = new JTextField(10);
-        startButton = new JButton("Start");
-        resetButton = new JButton("Reset");
-        helpButton = new JButton("Help");
-    
+
         JPanel topPanel = new JPanel();
+        label = new JLabel("Amount of Instructions: " + amountOfInstructions);
         topPanel.add(label);
+
+        JPanel middlePanel = new JPanel();
+        textField = new JTextField(10);
+        middlePanel.add(textField);
+        
         Document doc = textField.getDocument();
         if (doc instanceof AbstractDocument) {
             ((AbstractDocument) doc).setDocumentFilter(new IntegerFilter());
         }
 
-        JPanel middlePanel = new JPanel();
-        middlePanel.add(textField);
-
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.add(startButton);
-        bottomPanel.add(resetButton);
-        bottomPanel.add(helpButton);
-
-        startButton.addActionListener(e -> {
-            System.out.println("Botão Start pressionado!");
-        });
-
-        resetButton.addActionListener(e -> {
-            System.out.println("Botão Reset pressionado!");
-        });
-
-        helpButton.addActionListener(e -> {
-            System.out.println("Botão Help pressionado!");
-        });
-    
         panel.add(topPanel);
         panel.add(middlePanel);
-        panel.add(bottomPanel);
-    
-        panel.setVisible(true);
+
         return panel;
     }
-    
+
+    // @Override
+    protected void updateDisplay() {
+        label.setText("Amount of Instructions: " + counter);
+    }
+
 }
