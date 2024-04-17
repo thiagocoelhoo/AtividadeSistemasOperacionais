@@ -33,7 +33,8 @@ public class ProcessControlBlock {
 
     public static final int GLOBAL_POINTER_REGISTER = 28;
     public static final int STACK_POINTER_REGISTER = 29;
-    
+	private static int PCBCounter = 0;
+
     private Register [] regFile = {
     	new Register("$zero", 0, 0),
     	new Register("$at", 1, 0),
@@ -73,11 +74,13 @@ public class ProcessControlBlock {
     private Register hi= new Register("hi", 33, 0);//this is an internal register with arbitrary number
     private Register lo= new Register("lo", 34, 0);// this is an internal register with arbitrary number
     
-    private int PID;
+    private int PID = -1;
     private int programStartAddress;
     private String programState;
     
 	public ProcessControlBlock(int programCounter) {
+		PCBCounter++;
+		this.setPID(PCBCounter);
 		this.programCounter.setValue(programCounter);
 	}
     // Getters
