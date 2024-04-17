@@ -1,6 +1,8 @@
 package mars.mips.instructions.syscalls;
 
 import mars.ProgramStatement;
+import mars.mips.SO.ProcessManager.ProcessTable;
+import mars.mips.SO.ProcessManager.Scheduler;
 
 public class SyscallProcessTerminate extends AbstractSyscall {
     public SyscallProcessTerminate() {
@@ -8,6 +10,7 @@ public class SyscallProcessTerminate extends AbstractSyscall {
     }
     
     public void simulate(ProgramStatement statement) {
+        // TODO: Implementar syscall ProcessTerminate
         /*
          * O único parâmetro passado para essa syscall é seu código no registrador $v0
          *
@@ -26,6 +29,9 @@ public class SyscallProcessTerminate extends AbstractSyscall {
          * A classe que implementa o algoritmo de escalonamento deve estar preparada para implementar
          * outros algoritmos, ou seja, quando houver outros algoritmos uma simples mudança de parâmetro
          * deve invocar outro algoritmo sem a necessidade de mudar a implementação das outras classes.
-         */
+        */
+
+        ProcessTable.setRunningProcess(null);
+        Scheduler.executeNextProcess();
     }
 }
