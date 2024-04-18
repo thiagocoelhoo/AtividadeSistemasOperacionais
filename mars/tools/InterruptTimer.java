@@ -55,6 +55,7 @@ import java.util.Observable;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -122,6 +123,7 @@ public class InterruptTimer extends AbstractMarsToolAndApplication {
 
     private int counter;
     private int amountOfInstructions;
+    private String algorithm;
 
     private JPanel panel;
     private JTextField textField;
@@ -131,12 +133,14 @@ public class InterruptTimer extends AbstractMarsToolAndApplication {
         super(name, heading);
         this.amountOfInstructions = 0;
         this.counter = 0;
+        this.algorithm = "Fixed Priority";
     }
 
     public InterruptTimer(int amountOfInstructions) {
         super(name, heading);
         this.amountOfInstructions = amountOfInstructions;
         this.counter = 0;
+        this.algorithm = "Fixed Priority";
     }
 
     @Override
@@ -275,48 +279,23 @@ public class InterruptTimer extends AbstractMarsToolAndApplication {
             ((AbstractDocument) doc).setDocumentFilter(new IntegerFilter());
         }
 
-        
-        // Botão para iniciar o timer
-        JButton startButton = new JButton("Start Timer");
-        startButton.addActionListener(new ActionListener() {
+        // Combobox para selecionar o tipo de algoritmo de escalonamento, por prioridade fixa ou por loteria
+        JComboBox<String> comboBox = new JComboBox<>();
+        comboBox.addItem("Fixed Priority");
+        comboBox.addItem("Lottery");
+
+        // Quando for alterado 
+        comboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                AbstractAction action = new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        amountOfInstructions = Integer.parseInt(textField.getText());
-                        counter = 0;
-                        updateDisplay();
-                    }
-                };
-                // Simulator.getInstance().
-                updateDisplay();
-            }
-        });
-        
-
-
-        // Botão para parar o timer
-        JButton button = new JButton("Stop Timer");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                AbstractAction action = new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        amountOfInstructions = Integer.parseInt(textField.getText());
-                        counter = 0;
-                        updateDisplay();
-                    }
-                };
-                Simulator.getInstance().stopExecution(action);
-                Simulator.getInstance().notifyObservers();
-                Simulator.getInstance().notifyAll();
-                updateDisplay();
+                JComboBox cb = (JComboBox) e.getSource();
+                algorithm = (String) cb.getSelectedItem();
+                System.out.println(algorithm);
             }
         });
 
-        middlePanel.add(button);
+        middlePanel.add(comboBox);
+
 
         panel.add(topPanel);
         panel.add(middlePanel);
