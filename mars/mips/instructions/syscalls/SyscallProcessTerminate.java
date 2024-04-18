@@ -10,7 +10,6 @@ public class SyscallProcessTerminate extends AbstractSyscall {
     }
     
     public void simulate(ProgramStatement statement) {
-        // TODO: Implementar syscall ProcessTerminate
         /*
          * O único parâmetro passado para essa syscall é seu código no registrador $v0
          *
@@ -31,7 +30,8 @@ public class SyscallProcessTerminate extends AbstractSyscall {
          * deve invocar outro algoritmo sem a necessidade de mudar a implementação das outras classes.
         */
 
-        ProcessTable.setRunningProcess(null);
+        // ProcessTable.setRunningProcess(null);
+        ProcessTable.stopProcess();
         Scheduler.executeNextProcess();
     }
 }

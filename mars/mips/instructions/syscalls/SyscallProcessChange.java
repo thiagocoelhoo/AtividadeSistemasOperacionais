@@ -11,7 +11,6 @@ public class SyscallProcessChange extends AbstractSyscall{
     }
 
     public void simulate(ProgramStatement statement) {
-        // TODO: Implementar syscall ProcessChange
         /* 
          * A segunda syscall deve ser chamada de SycallProcessChange com o objetivo de trocar
          * o processo que está executando na CPU 
