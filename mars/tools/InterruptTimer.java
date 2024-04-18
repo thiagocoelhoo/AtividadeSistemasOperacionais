@@ -279,15 +279,17 @@ public class InterruptTimer extends AbstractMarsToolAndApplication {
             ((AbstractDocument) doc).setDocumentFilter(new IntegerFilter());
         }
 
-        // Combobox para selecionar o tipo de algoritmo de escalonamento, por prioridade fixa ou por loteria
+        // Combobox para selecionar o tipo de algoritmo de escalonamento, por prioridade fixa, FIFO ou por loteria
         JComboBox<String> comboBox = new JComboBox<>();
         comboBox.addItem("Fixed Priority");
+        comboBox.addItem("FIFO");
         comboBox.addItem("Lottery");
 
         // Quando for alterado 
         comboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                @SuppressWarnings("rawtypes")
                 JComboBox cb = (JComboBox) e.getSource();
                 algorithm = (String) cb.getSelectedItem();
                 System.out.println(algorithm);
