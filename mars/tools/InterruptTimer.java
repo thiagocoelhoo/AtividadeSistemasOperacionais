@@ -49,12 +49,21 @@ package mars.tools;
 
 
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Observable;
 
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -63,8 +72,10 @@ import javax.swing.text.DocumentFilter;
 import javax.swing.text.NumberFormatter;
 
 import mars.ProgramStatement;
+import mars.mips.SO.ProcessManager.Scheduler;
 import mars.mips.hardware.AccessNotice;
 import mars.mips.hardware.Memory;
+import mars.simulator.Simulator;
 
 class IntegerFilter extends DocumentFilter {
     @Override
@@ -150,6 +161,23 @@ public class InterruptTimer extends AbstractMarsToolAndApplication {
 
         counter++;
 
+        // Quando o contador atingir a quantidade de instruções configurada, uma interrupção é gerada 
+        if (counter > 0 && amountOfInstructions != 0 && counter == amountOfInstructions) {
+            // AbstractAction action = new AbstractAction() {
+            //     @Override
+            //     public void actionPerformed(ActionEvent e) {
+            //         amountOfInstructions = Integer.parseInt(textField.getText());
+            //         counter = 0;
+            //         updateDisplay();
+            //     }
+            // };
+            // Simulator.getInstance().stopExecution(action);
+            // updateDisplay();
+
+            Scheduler.executeNextProcess();
+            counter = 0;
+        }
+
         updateDisplay();
     }
 
@@ -165,6 +193,43 @@ public class InterruptTimer extends AbstractMarsToolAndApplication {
         updateDisplay();
     }
 
+    protected JComponent getHelpComponent() {
+        final String helpContent = 
+        	" This tool is composed of 3 parts : two seven-segment displays, an hexadecimal keyboard and counter \n"+
+        	"Seven segment display\n"+
+        	" Byte value at address 0xFFFF0010 : command right seven segment display \n "+
+        	" Byte value at address 0xFFFF0011 : command left seven segment display \n "+
+        	" Each bit of these two bytes are connected to segments (bit 0 for a segment, 1 for b segment and 7 for point \n \n"+
+        	"Hexadecimal keyboard\n"+
+        	" Byte value at address 0xFFFF0012 : command row number of hexadecimal keyboard (bit 0 to 3) and enable keyboard interrupt (bit 7) \n" +
+        	" Byte value at address 0xFFFF0014 : receive row and column of the key pressed, 0 if not key pressed \n"+
+        	" The mips program have to scan, one by one, each row (send 1,2,4,8...)"+
+        	" and then observe if a key is pressed (that mean byte value at adresse 0xFFFF0014 is different from zero). "+
+        	" This byte value is composed of row number (4 left bits) and column number (4 right bits)"+
+        	" Here you'll find the code for each key : 0x11,0x21,0x41,0x81,0x12,0x22,0x42,0x82,0x14,0x24,0x44,0x84,0x18,0x28,0x48,0x88. \n"+
+        	" For exemple key number 2 return 0x41, that mean the key is on column 3 and row 1. \n"+
+        	" If keyboard interruption is enable, an exception is started, with cause register bit number 11 set.\n \n"+
+        	"Counter\n"+
+        	" Byte value at address 0xFFFF0013 : If one bit of this byte is set, the counter interruption is enable.\n"+
+        	" If counter interruption is enable, every 30 instructions, an exception is started with cause register bit number 10.\n" +
+			"   (contributed by Didier Teifreto, dteifreto@lifc.univ-fcomte.fr)"
+        	;
+        JButton help = new JButton("Help");
+        help.addActionListener(
+        		new ActionListener() {
+        			public void actionPerformed(ActionEvent e) {
+        				JTextArea ja = new JTextArea(helpContent);
+        				ja.setRows(20);
+        				ja.setColumns(60);
+        				ja.setLineWrap(true);
+        				ja.setWrapStyleWord(true);
+        				JOptionPane.showMessageDialog(theWindow, new JScrollPane(ja),
+                        "Interrupt Timer Tools", JOptionPane.INFORMATION_MESSAGE);
+        			}
+        		});		
+        return help;  
+    }
+
     protected JComponent buildMainDisplayArea() {
         panel = new JPanel();
         panel.setLayout(new GridLayout(3, 1));
@@ -175,6 +240,34 @@ public class InterruptTimer extends AbstractMarsToolAndApplication {
 
         JPanel middlePanel = new JPanel();
         textField = new JTextField(10);
+
+        // Modificar o valor da variável de amountOfInstructions sempre que o usuário digitar um novo valor
+        textField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                if (textField.getText().isEmpty()) {
+                    return;
+                }
+                amountOfInstructions = Integer.parseInt(textField.getText());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                if (textField.getText().isEmpty()) {
+                    return;
+                }
+                amountOfInstructions = Integer.parseInt(textField.getText());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                if (textField.getText().isEmpty()) {
+                    return;
+                }
+                amountOfInstructions = Integer.parseInt(textField.getText());
+            }
+        });
+
         middlePanel.add(textField);
         
         Document doc = textField.getDocument();
@@ -182,11 +275,55 @@ public class InterruptTimer extends AbstractMarsToolAndApplication {
             ((AbstractDocument) doc).setDocumentFilter(new IntegerFilter());
         }
 
+        
+        // Botão para iniciar o timer
+        JButton startButton = new JButton("Start Timer");
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractAction action = new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        amountOfInstructions = Integer.parseInt(textField.getText());
+                        counter = 0;
+                        updateDisplay();
+                    }
+                };
+                // Simulator.getInstance().
+                updateDisplay();
+            }
+        });
+        
+
+
+        // Botão para parar o timer
+        JButton button = new JButton("Stop Timer");
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbstractAction action = new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        amountOfInstructions = Integer.parseInt(textField.getText());
+                        counter = 0;
+                        updateDisplay();
+                    }
+                };
+                Simulator.getInstance().stopExecution(action);
+                Simulator.getInstance().notifyObservers();
+                Simulator.getInstance().notifyAll();
+                updateDisplay();
+            }
+        });
+
+        middlePanel.add(button);
+
         panel.add(topPanel);
         panel.add(middlePanel);
 
         return panel;
     }
+
 
     // @Override
     protected void updateDisplay() {
