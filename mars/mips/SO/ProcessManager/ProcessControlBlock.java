@@ -2,6 +2,7 @@ package mars.mips.SO.ProcessManager;
 
 import mars.mips.hardware.Memory;
 import mars.mips.hardware.Register;
+import mars.mips.hardware.RegisterFile;
 
 /*
  * 3.Crie uma classe PCB (Process Control Block) que serve para armazenar todas as informações de contexto de um processo:
@@ -23,11 +24,25 @@ import mars.mips.hardware.Register;
 			ii. E para copiar da PCB para os registradores físicos
 
 	4. A classe PCB deve estar preparada para ser incrementada, recebendo novos atributos e métodos para acessá-los nos próximos trabalhos
-
-	5. Crie uma classe Tabela de Processos que instancia objetos da classe PCB para cada novo processo
-		a) Essa Tabela de Processo deve manter uma lista de processo “Prontos”
-		b) E um processo em “Execução”
  */
+
+
+/* Implementação 2.2 estruturas para o gerenciamento de memória
+
+Adicione atributos na sua classe PCB (Process Control Block) para manter informações
+a respeito do gerenciamento de memória do processo tais como:
+	- Registrador de limite superior da memória do processo
+	- Registrador de limite inferior da memória do processo
+	- Os registradores de limites de memória devem ser configurados como:
+
+	  Informações sobre registradores:
+	      Limite superior: endereço inicial do processo (label que o identifica, que também é usado pelo Fork)
+		  Limite inferior: endereço imediatamente antes do label do próximo processo.
+			  Caso seja o último processo, deve ser configurado com o endereço final do programa
+
+Cada vez que o processo for escalonado, além dos registradores físicos do processador,
+os valores dos registradores de limites da memória também devem atualizados das PCBs de cada processo
+*/
 
 public class ProcessControlBlock {
 
@@ -77,11 +92,17 @@ public class ProcessControlBlock {
     private int PID = -1;
     private int programStartAddress;
     private String programState;
+
+	// TODO: Verificar a necessidade dessas variáveis serem do tipo Register
+	private int upperBound = -1;
+	private int lowerBound = -1;
     
 	public ProcessControlBlock(int programCounter) {
 		PCBCounter++;
 		this.setPID(PCBCounter);
 		this.programCounter.setValue(programCounter);
+		this.upperBound = programCounter;
+		this.lowerBound = -1;
 	}
     // Getters
     
@@ -113,6 +134,14 @@ public class ProcessControlBlock {
     	return programState;
     }
     
+	public int getUpperBound() {
+		return upperBound;
+	}
+	
+	public int getLowerBound() {
+		return lowerBound;
+	}
+
     // Setters
     
     public void setRegister(int index, int value) {
@@ -145,6 +174,14 @@ public class ProcessControlBlock {
 		programState = value;
     }
 
+	public void setUpperBound(int value) {
+		upperBound = value;
+	}
+	
+	public void setLowerBound(int value) {
+		lowerBound = value;
+	}
+	
 	/*
 	 * Copiar os valores dos registradores físicos
 	 * para a PCB.
@@ -152,10 +189,10 @@ public class ProcessControlBlock {
 	public void saveContext() {
 		// TODO: Copiar valores de registradores Hi e Lo
 
-		Register[] registers = mars.mips.hardware.RegisterFile.getRegisters();
+		// Register[] registers = mars.mips.hardware.RegisterFile.getRegisters();
 		
 		for (int i = 0; i < 32; i++) {
-			setRegister(i, registers[i].getValue());
+			setRegister(i, RegisterFile.getValue(i));
 		}
 
 		setRegisterPC(mars.mips.hardware.RegisterFile.getProgramCounter());
@@ -168,10 +205,11 @@ public class ProcessControlBlock {
 	public void loadContext() {
 		for (int i = 0; i < 32; i++) {
 			Register reg = this.regFile[i];
-			mars.mips.hardware.RegisterFile.updateRegister(reg.getName(), reg.getValue());
+			mars.mips.hardware.RegisterFile.updateRegister(i, reg.getValue());
 		}
 
-		mars.mips.hardware.RegisterFile.updateRegister(programCounter.getName(), programCounter.getValue());
+		// mars.mips.hardware.RegisterFile.updateRegister(programCounter.getName(), programCounter.getValue());
+		RegisterFile.setProgramCounter(programCounter.getValue());
 		mars.mips.hardware.RegisterFile.updateRegister(hi.getName(), hi.getValue());
 		mars.mips.hardware.RegisterFile.updateRegister(lo.getName(), lo.getValue());
 	}

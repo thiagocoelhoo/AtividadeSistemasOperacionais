@@ -5,10 +5,11 @@
 	SyscallFork(Programa1)
 	SyscallFork(Programa2)
 	SyscallFork(Idle)
-	SyscallProcessChange
+	# SyscallProcessChange
 Idle:
 	loop:	
-		SyscallProcessChange
+		# SyscallProcessChange
+		NOP
 		j loop
 
 Programa1:
@@ -17,7 +18,7 @@ Programa1:
 	loop1:	
 		addi $s1, $s1, 1
 		beq $s1, $s2, fim1
-		SyscallProcessChange
+		# SyscallProcessChange
 		j loop1
 	fim1:	SyscallProcessTerminate
 
@@ -27,7 +28,7 @@ Programa2:
 	loop2:	
 		addi $s1, $s1, -1
 		beq $s1, $s2, fim2
-		SyscallProcessChange
+		# SyscallProcessChange
 		j loop2
 	fim2: SyscallProcessTerminate
 
