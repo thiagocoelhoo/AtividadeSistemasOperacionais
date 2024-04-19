@@ -133,14 +133,14 @@ public class InterruptTimer extends AbstractMarsToolAndApplication {
         super(name, heading);
         this.amountOfInstructions = 0;
         this.counter = 0;
-        this.algorithm = "Fixed Priority";
+        this.algorithm = "FIFO";
     }
 
     public InterruptTimer(int amountOfInstructions) {
         super(name, heading);
         this.amountOfInstructions = amountOfInstructions;
         this.counter = 0;
-        this.algorithm = "Fixed Priority";
+        this.algorithm = "FIFO";
     }
 
     @Override
@@ -162,23 +162,11 @@ public class InterruptTimer extends AbstractMarsToolAndApplication {
         if (notice.getAccessType() != AccessNotice.READ) {
             return;
         }
-
         counter++;
 
-        // Quando o contador atingir a quantidade de instruções configurada, uma interrupção é gerada 
+        // Quando o contador atingir a quantidade de instruções configurada, o escalonador é chamado
         if (counter > 0 && amountOfInstructions != 0 && counter == amountOfInstructions) {
-            // AbstractAction action = new AbstractAction() {
-            //     @Override
-            //     public void actionPerformed(ActionEvent e) {
-            //         amountOfInstructions = Integer.parseInt(textField.getText());
-            //         counter = 0;
-            //         updateDisplay();
-            //     }
-            // };
-            // Simulator.getInstance().stopExecution(action);
-            // updateDisplay();
-
-            Scheduler.executeNextProcess();
+            Scheduler.schedule();
             counter = 0;
         }
 
@@ -281,9 +269,9 @@ public class InterruptTimer extends AbstractMarsToolAndApplication {
 
         // Combobox para selecionar o tipo de algoritmo de escalonamento, por prioridade fixa, FIFO ou por loteria
         JComboBox<String> comboBox = new JComboBox<>();
-        comboBox.addItem("Fixed Priority");
         comboBox.addItem("FIFO");
         comboBox.addItem("Lottery");
+        comboBox.addItem("Fixed Priority");
 
         // Quando for alterado 
         comboBox.addActionListener(new ActionListener() {
@@ -291,8 +279,16 @@ public class InterruptTimer extends AbstractMarsToolAndApplication {
             public void actionPerformed(ActionEvent e) {
                 @SuppressWarnings("rawtypes")
                 JComboBox cb = (JComboBox) e.getSource();
-                algorithm = (String) cb.getSelectedItem();
-                System.out.println(algorithm);
+                algorithm = (String) cb.getSelectedItem();    
+            
+                if (algorithm.equals("FIFO")) {
+                    Scheduler.setAlgorithm(Scheduler.ALGORITHM.FIFO);
+                } else if (algorithm.equals("Lottery")) {
+                    Scheduler.setAlgorithm(Scheduler.ALGORITHM.LOTTERY);
+                } else if (algorithm.equals("Fixed Priority")) {
+                    Scheduler.setAlgorithm(Scheduler.ALGORITHM.FIXED_PRIORITY);
+                }
+                
             }
         });
 
