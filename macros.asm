@@ -1,5 +1,6 @@
-.macro SyscallFork (%process)
+.macro SyscallFork (%process, %priority)
 	la $a0, %process
+	la $a1, %priority
 	li $v0, 60
 	syscall
 .end_macro 

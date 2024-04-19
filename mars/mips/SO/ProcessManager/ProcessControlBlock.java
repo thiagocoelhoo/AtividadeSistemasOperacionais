@@ -86,25 +86,28 @@ public class ProcessControlBlock {
     };
        												  
     private Register programCounter= new Register("pc", 32, Memory.textBaseAddress); 
-    private Register hi= new Register("hi", 33, 0);//this is an internal register with arbitrary number
-    private Register lo= new Register("lo", 34, 0);// this is an internal register with arbitrary number
+    private Register hi = new Register("hi", 33, 0); //this is an internal register with arbitrary number
+    private Register lo = new Register("lo", 34, 0); // this is an internal register with arbitrary number
     
     private int PID = -1;
     private int programStartAddress;
     private String programState;
+	private int priority = 1;
 
-	// TODO: Verificar a necessidade dessas variáveis serem do tipo Register
 	private int upperBound = -1;
 	private int lowerBound = -1;
     
-	public ProcessControlBlock(int programCounter) {
+	public ProcessControlBlock(int programCounter, int priority) {
 		PCBCounter++;
 		this.setPID(PCBCounter);
 		this.programCounter.setValue(programCounter);
+		this.priority = priority;
+
 		this.upperBound = programCounter;
 		this.lowerBound = -1;
 	}
-    // Getters
+
+	// Getters
     
     public int getRegister(int index) {
     	return regFile[index].getValue();
@@ -140,6 +143,10 @@ public class ProcessControlBlock {
 	
 	public int getLowerBound() {
 		return lowerBound;
+	}
+
+	public int getPriority() {
+		return priority;
 	}
 
     // Setters
@@ -182,20 +189,21 @@ public class ProcessControlBlock {
 		lowerBound = value;
 	}
 	
+	public void setPriority(int value) {
+		priority = value;
+	}
+
 	/*
 	 * Copiar os valores dos registradores físicos
 	 * para a PCB.
 	 */
 	public void saveContext() {
-		// TODO: Copiar valores de registradores Hi e Lo
-
-		// Register[] registers = mars.mips.hardware.RegisterFile.getRegisters();
-		
 		for (int i = 0; i < 32; i++) {
 			setRegister(i, RegisterFile.getValue(i));
 		}
-
-		setRegisterPC(mars.mips.hardware.RegisterFile.getProgramCounter());
+		setRegisterPC(RegisterFile.getProgramCounter());
+		setRegisterHi(RegisterFile.getValue(33));
+		setRegisterLo(RegisterFile.getValue(34));
 	}
 
 	/*
@@ -205,13 +213,11 @@ public class ProcessControlBlock {
 	public void loadContext() {
 		for (int i = 0; i < 32; i++) {
 			Register reg = this.regFile[i];
-			mars.mips.hardware.RegisterFile.updateRegister(i, reg.getValue());
+			RegisterFile.updateRegister(i, reg.getValue());
 		}
-
-		// mars.mips.hardware.RegisterFile.updateRegister(programCounter.getName(), programCounter.getValue());
 		RegisterFile.setProgramCounter(programCounter.getValue());
-		mars.mips.hardware.RegisterFile.updateRegister(hi.getName(), hi.getValue());
-		mars.mips.hardware.RegisterFile.updateRegister(lo.getName(), lo.getValue());
+		RegisterFile.updateRegister(33, hi.getValue());
+		RegisterFile.updateRegister(34, lo.getValue());
 	}
 }
 

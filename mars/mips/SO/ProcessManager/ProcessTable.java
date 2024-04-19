@@ -1,8 +1,9 @@
 package mars.mips.SO.ProcessManager;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
  * Crie uma classe Tabela de Processos que instancia objetos da classe PCB para cada novo processo
@@ -13,22 +14,23 @@ import java.util.List;
 public class ProcessTable {
     static private List<ProcessControlBlock> processes = new ArrayList<ProcessControlBlock>();
     static private List<Integer> readyProcesses = new ArrayList<Integer>();
-    static private List<Integer> waitingProcesses = new ArrayList<Integer>();
     static private ProcessControlBlock runningProcess;
 
+    // Usado somente se o algoritmo de prioridade fixa for selecionado
+    static private Map<Integer, List<Integer>> priorityQueues = new HashMap<Integer, List<Integer>>();
+    
     /*
      * Adiciona processo na ProcessTable
      */
-    public static ProcessControlBlock createProcess(int programCounter) {
-        ProcessControlBlock process = new ProcessControlBlock(programCounter);
+    public static ProcessControlBlock createProcess(int programCounter, int priority) {
+        ProcessControlBlock process = new ProcessControlBlock(programCounter, priority);
         
         // Verificar se há algum processo na ProcessTable
-        if (processes.size() > 0) {
-            processes.get(processes.size() - 1).setLowerBound(process.getUpperBound());
-        }
+        // if (processes.size() > 0) {
+        //     // processes.get(processes.size() - 1).setLowerBound(process.getUpperBound());
+        // }
 
-        processes.add(process);
-        readyProcesses.add(process.getPID());
+        addProcessToQueue(process);
         return process;
     }
 
@@ -55,13 +57,9 @@ public class ProcessTable {
             System.out.println("Não é possível executar programa com PID inexistente.");
             return;
         }
-        ProcessControlBlock process = getProcess(PID);
 
-        // TODO: Criar lógica para definir estado do processo durante criação
-        removeProcessFromQueue(PID);
-        removeProcessFromBlockedQueue(PID);
-        
         stopProcess();
+        ProcessControlBlock process = removeProcessFromQueue(PID);
         process.setProgramState("running");
         runningProcess = process;
     }
@@ -72,23 +70,10 @@ public class ProcessTable {
         if (process == null) {
             System.out.println("Não é possível parar processo pois não há processo em execução.");
             return;
-        }        
-        
-        process.setProgramState("ready");
-        readyProcesses.add(process.getPID());
-        runningProcess = null;
-    }
-
-    public static void blockProcess() {
-        if (runningProcess == null) {
-            System.out.println("Não é possível bloquear processo pois não há processo em execução");
-           return;
         }
-        runningProcess.setProgramState("waiting");
-        waitingProcesses.add(runningProcess.getPID());
-
-        runningProcess = null;
         
+        addProcessToQueue(process);
+        runningProcess = null;
     }
 
     public static ProcessControlBlock getRunningProcess() {
@@ -102,15 +87,7 @@ public class ProcessTable {
         }
         return processList;
     }
-
-    public static List<ProcessControlBlock> getBlockedProcessesQueue() {
-        List<ProcessControlBlock> processList = new ArrayList<ProcessControlBlock>();
-        for (Integer pid: waitingProcesses) {
-            processList.add(getProcess(pid));
-        }
-        return processList;
-    }
-
+   
     public static ProcessControlBlock getProcess(int PID) {
         for (ProcessControlBlock process: processes) {
             if (process.getPID() == PID) {
@@ -120,35 +97,59 @@ public class ProcessTable {
         return null;
     }
 
+    public static ProcessControlBlock getHigherPriorityProcess() {
+        // Usado somente caso o algoritmo de escalonamento use as filas com prioridade
+        // Retorna o processo com prioridade mais próximo a zero
+
+        for (int priority = 0; priority < 10; priority++) {
+            List<Integer> queue = priorityQueues.get(priority);
+            if (queue != null && queue.size() > 0) {
+                int pid = queue.get(0);
+                return getProcess(pid);
+            }
+        }
+
+        return null;
+    }
+
     public static ProcessControlBlock removeProcessFromQueue(int PID) {
         for (int i = 0; i < readyProcesses.size(); i++) {
             if (readyProcesses.get(i) == PID) {
+                ProcessControlBlock process = getProcess(PID);
+                int priority = process.getPriority();
+                
+                // Remover da fila de processos prontos
                 readyProcesses.remove(i);
-                return getProcess(PID);
+
+                // Remover da fila de processos com prioridade
+                List<Integer> queue = priorityQueues.get(priority);
+                queue.remove((Integer) PID);
+
+                return process;
             }
         }
         return null;
     }
 
-    public static ProcessControlBlock removeProcessFromBlockedQueue(int PID) {
-        // else if (process.getProgramState() != null && process.getProgramState().equals("waiting")) {
-        for (int i = 0; i < waitingProcesses.size(); i++) {
-            if (waitingProcesses.get(i) == PID) {
-                waitingProcesses.remove(i);
-                return getProcess(PID);
-            }
+    public static void addProcessToQueue(ProcessControlBlock process) {
+        process.setProgramState("ready");
+        
+        if (!processes.contains(process)) {
+            processes.add(process);
         }
-        return null;
-    }
+        
+        // Adicionar a fila de prontos
+        readyProcesses.add(process.getPID());
 
-    public static void runBlockedProcess() {
-        int PID = waitingProcesses.get(waitingProcesses.size() - 1);
-        ProcessControlBlock process = getProcess(PID);
-        if (process != null) {
-            runningProcess.setProgramState("ready");
-            
-            runningProcess = process;
-            runningProcess.setProgramState("running");
+        // Adicionar tambem a fila com prioridade
+        int priority = process.getPriority();
+        List<Integer> queue = priorityQueues.get(priority);
+
+        if (queue == null) {
+            queue = new ArrayList<Integer>();
+            priorityQueues.put(priority, queue);
         }
+
+        queue.add(process.getPID());
     }
 }

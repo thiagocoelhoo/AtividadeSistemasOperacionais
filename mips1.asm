@@ -2,9 +2,9 @@
 
 .data
 .text
-	SyscallFork(Programa1)
-	SyscallFork(Programa2)
-	SyscallFork(Idle)
+	SyscallFork(Programa1, 2)
+	SyscallFork(Programa2, 1)
+	SyscallFork(Idle, 3)
 	# SyscallProcessChange
 Idle:
 	loop:	

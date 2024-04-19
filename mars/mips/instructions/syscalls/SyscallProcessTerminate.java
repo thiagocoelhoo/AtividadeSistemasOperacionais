@@ -32,6 +32,6 @@ public class SyscallProcessTerminate extends AbstractSyscall {
 
         // ProcessTable.setRunningProcess(null);
         ProcessTable.stopProcess();
-        Scheduler.executeNextProcess();
+        Scheduler.schedule();
     }
 }

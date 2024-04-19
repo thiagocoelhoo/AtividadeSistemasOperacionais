@@ -36,6 +36,6 @@ public class SyscallProcessChange extends AbstractSyscall{
             process.saveContext();
             System.out.println("Saving process context");
         }
-        Scheduler.executeNextProcess();
+        Scheduler.schedule();
     }
 }

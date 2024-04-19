@@ -15,9 +15,11 @@ public class SyscallFork extends AbstractSyscall {
      */
     public void simulate(ProgramStatement statement) {
         // int pc = statement.getAddress();
-        int regNumber = RegisterFile.getNumber("$a0");
-        int pc = RegisterFile.getValue(regNumber);
-        ProcessControlBlock process = ProcessTable.createProcess(pc);
+        int pc = RegisterFile.getValue(4);
+        int priority = RegisterFile.getValue(5);
+
+        ProcessControlBlock process = ProcessTable.createProcess(pc, priority);
+
         System.out.printf("Syscall fork: $a0 = %d; PID = %d\n", pc, process.getPID());
     }
 }
