@@ -1,6 +1,7 @@
 package mars.mips.instructions.syscalls;
 
 import mars.ProgramStatement;
+import mars.mips.SO.ProcessManager.ProcessControlBlock;
 import mars.mips.SO.ProcessManager.ProcessTable;
 import mars.mips.SO.ProcessManager.Semaphore;
 import mars.mips.hardware.RegisterFile;
@@ -36,7 +37,10 @@ public class SyscallDownSemaphore extends AbstractSyscall {
             value -= 1;
             s.setValue(value);
         } else {
-            ProcessTable.blockProcess();
+            // Remove processo em execução e o coloca na lista de bloqueados
+            ProcessControlBlock p = ProcessTable.getRunningProcess();
+            ProcessTable.removeProcess(p.getPID());
+            s.add(p);
         }
     }
 }

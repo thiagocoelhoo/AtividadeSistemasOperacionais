@@ -1,8 +1,8 @@
 package mars.mips.instructions.syscalls;
 
 import mars.ProgramStatement;
+import mars.mips.SO.ProcessManager.ProcessControlBlock;
 import mars.mips.SO.ProcessManager.ProcessTable;
-// import mars.mips.SO.ProcessManager.Scheduler;
 import mars.mips.SO.ProcessManager.Semaphore;
 import mars.mips.hardware.RegisterFile;
 
@@ -26,16 +26,18 @@ public class SyscallUpSemaphore extends AbstractSyscall {
         Semaphore s = Semaphore.getSemaphore(varAddress);
         
         if (s == null) {
-            System.out.println("Error: Invalid semaphore.");
+            System.out.println("Error: Invalid semaphore address.");
             return;
         }
-
-        if (ProcessTable.getBlockedProcessesQueue().size() > 0) {
-            // Scheduler.executeNextProcess();
-        }
         
-        value = s.getValue() + 1;
-        s.setValue(value);
-
+        // Se houver processos bloquados, adiciona um processo a lista de prontos
+        if (s.getBlockedProcesses().size() > 0) {
+            ProcessControlBlock process = s.pop();
+            ProcessTable.addProcessToQueue(process);
+        } else {
+            // Incrementa o contador do semaforo
+            value = s.getValue() + 1;
+            s.setValue(value);
+        }
     }
 }
